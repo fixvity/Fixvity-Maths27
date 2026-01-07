@@ -1,0 +1,212 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Area Calculator</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+
+<style>
+:root{
+  --primary:#2563eb;
+  --bg:#f4f7fb;
+  --card:#ffffff;
+  --radius:14px;
+}
+*{box-sizing:border-box}
+body{
+  margin:0;
+  font-family:Inter,system-ui,Arial;
+  background:var(--bg);
+}
+.container{
+  max-width:1150px;
+  margin:auto;
+  padding:24px;
+}
+.card{
+  background:var(--card);
+  border-radius:var(--radius);
+  padding:30px;
+  box-shadow:0 12px 32px rgba(0,0,0,.08);
+}
+h1{
+  margin:0 0 6px;
+  color:var(--primary);
+}
+small{color:#555}
+
+label{
+  font-weight:600;
+  display:block;
+  margin-top:16px;
+}
+input,select{
+  width:100%;
+  padding:14px;
+  margin-top:6px;
+  border-radius:10px;
+  border:1px solid #ddd;
+  font-size:16px;
+}
+button{
+  width:100%;
+  margin-top:26px;
+  padding:16px;
+  font-size:17px;
+  background:var(--primary);
+  color:#fff;
+  border:none;
+  border-radius:12px;
+  cursor:pointer;
+}
+button:hover{opacity:.92}
+
+.form-grid{
+  display:grid;
+  grid-template-columns:repeat(auto-fit,minmax(260px,1fr));
+  gap:20px;
+}
+
+.grid{
+  display:grid;
+  grid-template-columns:repeat(auto-fit,minmax(320px,1fr));
+  gap:26px;
+  margin-top:32px;
+}
+
+.result{
+  font-size:20px;
+  font-weight:700;
+}
+.formula{
+  font-size:16px;
+  color:#444;
+}
+.error{
+  color:#dc2626;
+  font-weight:600;
+  margin-top:12px;
+}
+</style>
+</head>
+
+<body>
+<div class="container">
+
+<div class="card">
+<h1>Area Calculator</h1>
+<small>Accurate area calculation for all geometrical shapes · International standards</small>
+
+<label>Shape</label>
+<select id="shape" onchange="updateFields()">
+  <option value="square">Square</option>
+  <option value="rectangle">Rectangle</option>
+  <option value="triangle">Triangle (Base & Height)</option>
+  <option value="triangleHeron">Triangle (Heron's Formula)</option>
+  <option value="circle">Circle</option>
+  <option value="semicircle">Semi-Circle</option>
+  <option value="parallelogram">Parallelogram</option>
+  <option value="trapezium">Trapezium</option>
+  <option value="rhombus">Rhombus</option>
+  <option value="kite">Kite</option>
+  <option value="ellipse">Ellipse</option>
+  <option value="polygon">Regular Polygon</option>
+</select>
+
+<label>Unit</label>
+<select id="unit">
+  <option>mm²</option>
+  <option selected>cm²</option>
+  <option>m²</option>
+  <option>km²</option>
+  <option>in²</option>
+  <option>ft²</option>
+</select>
+
+<div class="form-grid" id="inputs"></div>
+
+<button onclick="calculate()">Calculate Area</button>
+<div id="error" class="error"></div>
+</div>
+
+<div class="grid">
+  <div class="card">
+    <div class="result" id="output">Area = —</div>
+  </div>
+  <div class="card">
+    <div class="formula" id="formulaBox"><b>Formula Used</b><br><br>—</div>
+  </div>
+</div>
+
+</div>
+
+<script>
+const inputsDiv=document.getElementById("inputs");
+
+function field(label,id){
+  return `<div><label>${label}</label><input type="number" id="${id}" step="any"></div>`;
+}
+
+function updateFields(){
+  inputsDiv.innerHTML="";
+  switch(shape.value){
+    case"square":inputsDiv.innerHTML=field("Side (a)","a");break;
+    case"rectangle":inputsDiv.innerHTML=field("Length (l)","l")+field("Width (w)","w");break;
+    case"triangle":inputsDiv.innerHTML=field("Base (b)","b")+field("Height (h)","h");break;
+    case"triangleHeron":inputsDiv.innerHTML=field("Side a","a")+field("Side b","b")+field("Side c","c");break;
+    case"circle":inputsDiv.innerHTML=field("Radius (r)","r");break;
+    case"semicircle":inputsDiv.innerHTML=field("Radius (r)","r");break;
+    case"parallelogram":inputsDiv.innerHTML=field("Base (b)","b")+field("Height (h)","h");break;
+    case"trapezium":inputsDiv.innerHTML=field("Base a","a")+field("Base b","b")+field("Height (h)","h");break;
+    case"rhombus":inputsDiv.innerHTML=field("Diagonal d₁","d1")+field("Diagonal d₂","d2");break;
+    case"kite":inputsDiv.innerHTML=field("Diagonal d₁","d1")+field("Diagonal d₂","d2");break;
+    case"ellipse":inputsDiv.innerHTML=field("Major radius (a)","a")+field("Minor radius (b)","b");break;
+    case"polygon":inputsDiv.innerHTML=field("Number of sides (n)","n")+field("Side length (s)","s");break;
+  }
+}
+updateFields();
+
+function v(id){
+  const x=parseFloat(document.getElementById(id)?.value);
+  return isNaN(x)||x<=0?null:x;
+}
+
+function calculate(){
+  error.innerText="";
+  let A=0,f="";
+  const u=unit.value;
+
+  try{
+    switch(shape.value){
+      case"square":A=v("a")**2;f="a²";break;
+      case"rectangle":A=v("l")*v("w");f="l × w";break;
+      case"triangle":A=0.5*v("b")*v("h");f="½bh";break;
+      case"triangleHeron":
+        let a=v("a"),b=v("b"),c=v("c");
+        let s=(a+b+c)/2;
+        A=Math.sqrt(s*(s-a)*(s-b)*(s-c));
+        f="√[s(s−a)(s−b)(s−c)]";break;
+      case"circle":A=Math.PI*v("r")**2;f="πr²";break;
+      case"semicircle":A=0.5*Math.PI*v("r")**2;f="½πr²";break;
+      case"parallelogram":A=v("b")*v("h");f="bh";break;
+      case"trapezium":A=0.5*(v("a")+v("b"))*v("h");f="½(a+b)h";break;
+      case"rhombus":A=0.5*v("d1")*v("d2");f="½d₁d₂";break;
+      case"kite":A=0.5*v("d1")*v("d2");f="½d₁d₂";break;
+      case"ellipse":A=Math.PI*v("a")*v("b");f="πab";break;
+      case"polygon":
+        let n=v("n"),s1=v("s");
+        A=(n*s1*s1)/(4*Math.tan(Math.PI/n));
+        f="(ns²)/(4tan(π/n))";break;
+    }
+  }catch{
+    return error.innerText="Invalid input values.";
+  }
+
+  if(!isFinite(A)) return error.innerText="Please enter valid values.";
+
+  output.innerText=`Area = ${A.toFixed(6)} ${u}`;
+  formulaBox.innerHTML=`<b>Formula Used</b><br><br>${f}`;
+}
+</script>
+</body>
+</html>
